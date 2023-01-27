@@ -435,7 +435,7 @@ assessment-aggregator:
       }
     }
     assessment.skip.missingRecords = true
-    content.read.api = "https://uphrh.in/api/content/v4/read/"
+    content.read.api = "{{ content_read_api_host }}/{{ content_read_api_endpoint }}"
     user.activity.agg.type="attempt_metrics"
 
   flink-conf: |+
