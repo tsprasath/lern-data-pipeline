@@ -224,10 +224,13 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
     logger.info("Certificate rc called | Api:: " + api)
     var id: String = null
     val uri: String = config.rcBaseUrl + "/" + config.rcEntity
+    logger.info("RC Create API URI: " + uri)
     val status = api match {
       case config.rcDeleteApi => httpUtil.delete(uri + "/" +identifier).status
       case config.rcCreateApi =>
+        logger.info("RC Create API request: " + request)
         val plainReq: String = ScalaModuleJsonUtils.serialize(request)
+        logger.info("RC Create API plainReq: " + plainReq)
         val req = removeBadChars(plainReq)
         logger.info("RC Create API request: " + req)
         val httpResponse = httpUtil.post(uri, req)
