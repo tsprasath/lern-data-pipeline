@@ -242,9 +242,13 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         }
         httpResponse.status
       case config.rcSearchApi =>
+        logger.info("RC Search API request: " + request)
         val req: String = ScalaModuleJsonUtils.serialize(request)
+        logger.info("RC Search API request: " + req)
         val searchUri = config.rcBaseUrl + "/" + "PublicKey" + "/search"
+        logger.info("RC Search API URI: " + searchUri)
         val httpResponse = httpUtil.post(searchUri, req)
+        logger.info("RC Search API httpResponse: " + httpResponse)
         if(httpResponse.status == 200) {
           val resp = ScalaJsonUtil.deserialize[List[Map[String, AnyRef]]](httpResponse.body)
           id = resp.head.getOrElse("osid", null).asInstanceOf[String]
