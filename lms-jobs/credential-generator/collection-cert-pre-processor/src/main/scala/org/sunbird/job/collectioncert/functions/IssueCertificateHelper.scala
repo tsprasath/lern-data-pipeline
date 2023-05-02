@@ -217,6 +217,7 @@ trait IssueCertificateHelper {
             "name" -> certName,
             "tag" -> event.batchId
         )
+        logger.info(s"cert preprocessor - edata map value - ${eData}")
         ScalaJsonUtil.serialize(BEJobRequestEvent(edata = eData, `object` = EventObject(id = event.userId)))
     }
     def getLocationDetails(userDetails: Map[String, AnyRef], additionalProps: Map[String, List[String]]): Map[String, Any] = {
