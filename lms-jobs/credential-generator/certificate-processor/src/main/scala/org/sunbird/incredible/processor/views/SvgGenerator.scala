@@ -72,11 +72,11 @@ object SvgGenerator {
   @throws[FileNotFoundException]
   def validateSVGTemplateURL(svgTemplate: String, baseUrl: String, contentCloudStorageContainer:String): String = {
     // temp code
-    logger.info("SVG template before - {}", svgTemplate)
-    val currentBaseUrl = baseUrl+"/"+contentCloudStorageContainer+"/"+contentCloudStorageContainer
-    logger.info("SVG template current base uri - {}", currentBaseUrl)
-    val templateUrl: String = svgTemplate.replace(currentBaseUrl, baseUrl + "/" + contentCloudStorageContainer).orElse(svgTemplate).toString()
-    logger.info("SVG template after - {}", templateUrl)
+    logger.info("SVG template before - ".concat(svgTemplate))
+    val currentBaseUrl = baseUrl+"/"+contentCloudStorageContainer
+    logger.info("SVG template current base uri - ".concat(currentBaseUrl))
+    val templateUrl: String = svgTemplate.replace(currentBaseUrl, baseUrl).orElse(svgTemplate).toString()
+    logger.info("SVG template after - ".concat(templateUrl));
     templateUrl
   }
 
