@@ -52,13 +52,14 @@ class CollectionCertPreProcessorFn(config: CollectionCertPreProcessorConfig, htt
                                 context: KeyedProcessFunction[String, Event, String]#Context,
                                 metrics: Metrics): Unit = {
         try {
+            logger.info("CollectionCertPreProcessorFn | processElement | event - {}", event)
             metrics.incCounter(config.totalEventsCount)
             if(event.isValid()(config)) {
                 val certTemplates = fetchTemplates(event)(metrics).filter(template => template._2.getOrElse("url", "").asInstanceOf[String].contains(".svg"))
-                logger.info(s"cert preprocessor fn - cert template val - ${certTemplates}")
+                logger.info("CollectionCertPreProcessorFn | fetch template | result templates- {}", certTemplates)
                 if(!certTemplates.isEmpty) {
                     certTemplates.map(template => {
-                        logger.info(s"cert preprocessor fn - template val - ${template._2}")
+                        logger.info("CollectionCertPreProcessorFn | processElement | template - {}", template)
                         val certEvent = issueCertificate(event, template._2)(cassandraUtil, cache, contentCache, metrics, config, httpUtil)
                         Option(certEvent).map(e => {
                             context.output(config.generateCertificateOutputTag, certEvent)
@@ -86,8 +87,9 @@ class CollectionCertPreProcessorFn(config: CollectionCertPreProcessorConfig, htt
     def fetchTemplates(event: Event)(implicit metrics: Metrics): Map[String, Map[String, String]] = {
         val query = QueryBuilder.select(config.certTemplates).from(config.keyspace, config.courseTable)
           .where(QueryBuilder.eq(config.dbCourseId, event.courseId)).and(QueryBuilder.eq(config.dbBatchId, event.batchId))
-        
+        logger.info("CollectionCertPreProcessorFn | fetch template | query - {}", query)
         val row: Row = cassandraUtil.findOne(query.toString)
+        logger.info("CollectionCertPreProcessorFn | fetch template | query result - {}", row)
         if(null != row && !row.isNull(config.certTemplates)) {
             val templates = row.getMap(config.certTemplates, TypeToken.of(classOf[String]), TypeTokens.mapOf(classOf[String], classOf[String]))
             templates.asScala.map(template => (template._1 -> template._2.asScala.toMap)).toMap

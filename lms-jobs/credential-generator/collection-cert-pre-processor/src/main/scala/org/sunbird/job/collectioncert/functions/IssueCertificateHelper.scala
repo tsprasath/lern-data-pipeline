@@ -21,17 +21,23 @@ trait IssueCertificateHelper {
         //validCriteria
         logger.info("issueCertificate i/p event =>"+event)
         val criteria = validateTemplate(template, event.batchId)(config)
+        logger.info("CollectionCertPreProcessorFn | issue cert | criteria - {}", criteria)
         //validateEnrolmentCriteria
         val certName = template.getOrElse(config.name, "")
+        logger.info("CollectionCertPreProcessorFn | issue cert | cert name - {}", certName)
         val additionalProps: Map[String, List[String]] = ScalaJsonUtil.deserialize[Map[String, List[String]]](template.getOrElse("additionalProps", "{}"))
+        logger.info("CollectionCertPreProcessorFn | issue cert | additional props - {}", additionalProps)
         val enrolledUser: EnrolledUser = validateEnrolmentCriteria(event, criteria.getOrElse(config.enrollment, Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]], certName, additionalProps)(metrics, cassandraUtil, config)
+        logger.info("CollectionCertPreProcessorFn | issue cert | enrolled User - {}", enrolledUser)
         //validateAssessmentCriteria
         val assessedUser = validateAssessmentCriteria(event, criteria.getOrElse(config.assessment, Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]], enrolledUser.userId, additionalProps)(metrics, cassandraUtil, contentCache, config)
+        logger.info("CollectionCertPreProcessorFn | issue cert | assessed user - {}", assessedUser)
         //validateUserCriteria
         val userDetails = validateUser(assessedUser.userId, criteria.getOrElse(config.user, Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]], additionalProps)(metrics, config, httpUtil)
-
+        logger.info("CollectionCertPreProcessorFn | issue cert | user details  - {}", userDetails)
         //generateCertificateEvent
         if(userDetails.nonEmpty) {
+            logger.info("CollectionCertPreProcessorFn | issue cert | generate certificate start")
             generateCertificateEvent(event, template, userDetails, enrolledUser, assessedUser, additionalProps, certName)(metrics, config, cache, httpUtil)
         } else {
             logger.info(s"""User :: ${event.userId} did not match the criteria for batch :: ${event.batchId} and course :: ${event.courseId}""")
@@ -200,6 +206,11 @@ trait IssueCertificateHelper {
         val courseName = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
         val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
         val related = getRelatedData(event, enrolledUser, assessedUser, userDetails, additionalProps, certName, courseName)(config)
+        logger.info("CollectionCertPreProcessorFn | generate cert | template url - {}", template.getOrElse("url", ""))
+        logger.info("CollectionCertPreProcessorFn | generate cert | config.cloudStoreBasePathPlaceholder - {}", config.cloudStoreBasePathPlaceholder)
+        logger.info("CollectionCertPreProcessorFn | generate cert | config.baseUrl - {}", config.baseUrl)
+        logger.info("CollectionCertPreProcessorFn | generate cert | config.contentCloudStorageContainer - {}", config.contentCloudStorageContainer)
+        logger.info("CollectionCertPreProcessorFn | generate cert | template.getOrElse(\"url\", \"\").replace(config.cloudStoreBasePathPlaceholder, config.baseUrl+\"/\"+config.contentCloudStorageContainer) - {}", template.getOrElse("url", "").replace(config.cloudStoreBasePathPlaceholder, config.baseUrl+"/"+config.contentCloudStorageContainer))
         val eData = Map[String, AnyRef] (
             "issuedDate" -> dateFormatter.format(enrolledUser.issuedOn),
             "data" -> List(Map[String, AnyRef]("recipientName" -> recipientName, "recipientId" -> event.userId)),
@@ -217,7 +228,7 @@ trait IssueCertificateHelper {
             "name" -> certName,
             "tag" -> event.batchId
         )
-        logger.info(s"cert preprocessor - edata map value - ${eData}")
+        logger.info("CollectionCertPreProcessorFn | generate cert | edata - {}", eData)
         ScalaJsonUtil.serialize(BEJobRequestEvent(edata = eData, `object` = EventObject(id = event.userId)))
     }
     def getLocationDetails(userDetails: Map[String, AnyRef], additionalProps: Map[String, List[String]]): Map[String, Any] = {
