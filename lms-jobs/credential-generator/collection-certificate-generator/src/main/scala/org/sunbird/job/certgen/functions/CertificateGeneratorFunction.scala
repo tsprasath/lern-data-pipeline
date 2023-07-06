@@ -13,6 +13,7 @@ import org.sunbird.incredible.pojos.ob.CertificateExtension
 import org.sunbird.incredible.processor.CertModel
 import org.sunbird.incredible.processor.store.StorageService
 import org.sunbird.incredible.processor.views.SvgGenerator
+import org.sunbird.incredible.processor.views.SvgGenerator.logger
 import org.sunbird.incredible.{CertificateConfig, CertificateGenerator, JsonKeys, ScalaModuleJsonUtils}
 import org.sunbird.job.certgen.domain.Issuer
 import org.sunbird.job.certgen.domain._
@@ -22,7 +23,7 @@ import org.sunbird.job.exception.InvalidEventException
 import org.sunbird.job.util.{CassandraUtil, ElasticSearchUtil, HttpUtil, ScalaJsonUtil}
 import org.sunbird.job.{BaseProcessKeyedFunction, Metrics}
 
-import java.io.{File, IOException}
+import java.io.{File, FileNotFoundException, IOException}
 import java.lang.reflect.Type
 import java.text.SimpleDateFormat
 import java.util
@@ -96,7 +97,7 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         val qrMap = certificateGenerator.generateQrCode(uuid, directory, certificateConfig.basePath)
         val encodedQrCode: String = encodeQrCode(qrMap.qrFile)
         logger.info("Update template URL - {} || {} || {}", event.svgTemplate, config.baseUrl, config.contentCloudStorageContainer)
-        val templateURL = SvgGenerator.validateSVGTemplateURL(event.svgTemplate, config.baseUrl, config.contentCloudStorageContainer)
+        val templateURL = validateSVGTemplateURL(event.svgTemplate, config.baseUrl, config.contentCloudStorageContainer)
         logger.info("Update template URL - {}", templateURL)
         val printUri = SvgGenerator.generate(certificateExtension, encodedQrCode, templateURL)
         certificateExtension.printUri = Option(printUri)
@@ -368,6 +369,16 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
       actor = Actor(id = data.userId),
       context = EventContext(cdata = Array(Map("type" -> config.courseBatch, config.id -> data.batchId).asJava)),
       `object` = EventObject(id = data.certificate.id, `type` = "Certificate", rollup = Map(config.l1 -> data.courseId).asJava))
+  }
+
+  def validateSVGTemplateURL(svgTemplate: String, baseUrl: String, contentCloudStorageContainer: String): String = {
+    // temp code
+    logger.info("SVG template before - ".concat(svgTemplate))
+    val currentBaseUrl = baseUrl + "/" + contentCloudStorageContainer
+    logger.info("SVG template current base uri - ".concat(currentBaseUrl))
+    val templateUrl: String = svgTemplate.replace(currentBaseUrl, baseUrl).orElse(svgTemplate).toString()
+    logger.info("SVG template after - ".concat(templateUrl));
+    templateUrl
   }
 
 
