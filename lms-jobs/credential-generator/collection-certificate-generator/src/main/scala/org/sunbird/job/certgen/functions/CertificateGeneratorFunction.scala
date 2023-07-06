@@ -97,9 +97,7 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         val qrMap = certificateGenerator.generateQrCode(uuid, directory, certificateConfig.basePath)
         val encodedQrCode: String = encodeQrCode(qrMap.qrFile)
         logger.info("Update template URL - {} || {} || {}", event.svgTemplate, config.baseUrl, config.contentCloudStorageContainer)
-        val templateURL = validateSVGTemplateURL(event.svgTemplate, config.baseUrl, config.contentCloudStorageContainer)
-        logger.info("Update template URL - {}", templateURL)
-        val printUri = SvgGenerator.generate(certificateExtension, encodedQrCode, templateURL)
+        val printUri = SvgGenerator.generate(certificateExtension, encodedQrCode, event.svgTemplate)
         certificateExtension.printUri = Option(printUri)
         val jsonUrl = uploadJson(certificateExtension, directory.concat(uuid).concat(".json"), event.tag.concat("/"))
         //adding certificate to registry
@@ -369,16 +367,6 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
       actor = Actor(id = data.userId),
       context = EventContext(cdata = Array(Map("type" -> config.courseBatch, config.id -> data.batchId).asJava)),
       `object` = EventObject(id = data.certificate.id, `type` = "Certificate", rollup = Map(config.l1 -> data.courseId).asJava))
-  }
-
-  def validateSVGTemplateURL(svgTemplate: String, baseUrl: String, contentCloudStorageContainer: String): String = {
-    // temp code
-    logger.info("SVG template before - ".concat(svgTemplate))
-    val currentBaseUrl = baseUrl + "/" + contentCloudStorageContainer
-    logger.info("SVG template current base uri - ".concat(currentBaseUrl))
-    val templateUrl: String = svgTemplate.replace(currentBaseUrl, baseUrl).orElse(svgTemplate).toString()
-    logger.info("SVG template after - ".concat(templateUrl));
-    templateUrl
   }
 
 
