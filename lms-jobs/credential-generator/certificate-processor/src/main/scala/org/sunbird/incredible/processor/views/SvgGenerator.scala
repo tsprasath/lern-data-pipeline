@@ -22,6 +22,7 @@ object SvgGenerator {
 
   @throws[FileNotFoundException]
   def generate(certificateExtension: CertificateExtension, encodedQrCode: String, svgTemplateUrl: String): String = {
+    logger.info("svg template url : {}", svgTemplateUrl);
     var cachedTemplate = svgTemplatesCache.get(svgTemplateUrl).getOrElse("")
     if (StringUtils.isEmpty(cachedTemplate)) {
       logger.info("{} svg not cached , downloading", svgTemplateUrl)
@@ -66,6 +67,17 @@ object SvgGenerator {
     val svgString = svgFileSource.mkString
     svgFileSource.close()
     svgString
+  }
+
+  @throws[FileNotFoundException]
+  def validateSVGTemplateURL(svgTemplate: String, baseUrl: String, contentCloudStorageContainer:String): String = {
+    // temp code
+    logger.info("SVG template before - {}", svgTemplate)
+    val currentBaseUrl = baseUrl+"/"+contentCloudStorageContainer+"/"+contentCloudStorageContainer
+    logger.info("SVG template current base uri - {}", currentBaseUrl)
+    val templateUrl: String = svgTemplate.replace(currentBaseUrl, baseUrl + "/" + contentCloudStorageContainer).orElse(svgTemplate).toString()
+    logger.info("SVG template after - {}", templateUrl)
+    templateUrl
   }
 
 }

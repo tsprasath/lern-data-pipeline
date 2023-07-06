@@ -95,7 +95,10 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         uuid = certificateGenerator.getUUID(certificateExtension)
         val qrMap = certificateGenerator.generateQrCode(uuid, directory, certificateConfig.basePath)
         val encodedQrCode: String = encodeQrCode(qrMap.qrFile)
-        val printUri = SvgGenerator.generate(certificateExtension, encodedQrCode, event.svgTemplate)
+        logger.info("Update template URL - {} || {} || {}", event.svgTemplate, config.baseUrl, config.contentCloudStorageContainer)
+        val templateURL = SvgGenerator.validateSVGTemplateURL(event.svgTemplate, config.baseUrl, config.contentCloudStorageContainer)
+        logger.info("Update template URL - {}", templateURL)
+        val printUri = SvgGenerator.generate(certificateExtension, encodedQrCode, templateURL)
         certificateExtension.printUri = Option(printUri)
         val jsonUrl = uploadJson(certificateExtension, directory.concat(uuid).concat(".json"), event.tag.concat("/"))
         //adding certificate to registry
