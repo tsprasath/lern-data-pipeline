@@ -210,7 +210,7 @@ trait IssueCertificateHelper {
         logger.info("CollectionCertPreProcessorFn | generate cert | config.cloudStoreBasePathPlaceholder - {}", config.cloudStoreBasePathPlaceholder)
         logger.info("CollectionCertPreProcessorFn | generate cert | config.baseUrl - {}", config.baseUrl)
         logger.info("CollectionCertPreProcessorFn | generate cert | config.contentCloudStorageContainer - {}", config.contentCloudStorageContainer)
-        logger.info("CollectionCertPreProcessorFn | generate cert | template.getOrElse(\"url\", \"\").replace(config.cloudStoreBasePathPlaceholder, config.baseUrl+\"/\"+config.contentCloudStorageContainer) - {}", template.getOrElse("url", "").replace(config.cloudStoreBasePathPlaceholder, config.baseUrl+"/"+config.contentCloudStorageContainer))
+        logger.info("CollectionCertPreProcessorFn | generate cert | template.getOrElse(\"url\", \"\").replace(config.cloudStoreBasePathPlaceholder, config.baseUrl+\"/\"+config.contentCloudStorageContainer) - {}", template.getOrElse("url", "").replace(config.cloudStoreBasePathPlaceholder, config.baseUrl))
         val eData = Map[String, AnyRef] (
             "issuedDate" -> dateFormatter.format(enrolledUser.issuedOn),
             "data" -> List(Map[String, AnyRef]("recipientName" -> recipientName, "recipientId" -> event.userId)),
