@@ -142,7 +142,7 @@ class NotifierFunction(config: CertificateGeneratorConfig, httpUtil: HttpUtil, @
 
   private def getUserDetails(userId: String)(metrics: Metrics): Map[String, AnyRef] = {
     logger.info("getting user info for id {}", userId)
-    val httpResponse = httpUtil.get(config.learnerServiceBaseUrl + "/private/user/v1/read/" + userId)
+    val httpResponse = httpUtil.get(config.learnerServiceBaseUrl + "/user/v5/read/" + userId)
     if (200 == httpResponse.status) {
       logger.info("user search response status {} :: {} ", httpResponse.status, httpResponse.body)
       val response = ScalaJsonUtil.deserialize[Map[String, AnyRef]](httpResponse.body)
